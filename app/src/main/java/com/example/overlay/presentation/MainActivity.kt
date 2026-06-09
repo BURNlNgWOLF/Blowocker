@@ -2,11 +2,17 @@ package com.example.overlay.presentation
 
 import android.content.Intent
 import android.os.Bundle
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import android.provider.Settings
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +29,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -47,15 +54,28 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.focus.focusRequester
 
 class MainActivity : ComponentActivity() {
+    companion object {
+        const val LOCATION_PERMISSION_REQUEST = 1001
+    }
 
     private lateinit var startOverlayUseCase: StartOverlayUseCase
     private lateinit var appLaunchMonitor: AppLaunchMonitor
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Request location permission for Wi‑Fi SSID access
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                LOCATION_PERMISSION_REQUEST
+            )
+        }
         Log.d("Overlay", "MainActivity onCreate called")
 
         // Manual Injection
@@ -107,12 +127,24 @@ fun MainScaffold(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceEvenly
                 ) {
-                    IconButton(onClick = { currentScreen = Screen.Selection }) {
-                        Icon(Icons.Default.Add, contentDescription = "Add Apps")
-                    }
-                    IconButton(onClick = { currentScreen = Screen.Monitored }) {
-                        Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Monitored Apps")
-                    }
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp)
+                        .clickable { currentScreen = Screen.Selection },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Add Apps")
+                }
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp)
+                        .clickable { currentScreen = Screen.Monitored },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Monitored Apps")
+                }
                 }
             }
         }
