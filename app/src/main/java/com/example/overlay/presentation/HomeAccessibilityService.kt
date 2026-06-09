@@ -36,6 +36,9 @@ class HomeAccessibilityService : AccessibilityService() {
         Log.d(TAG, "Service connected and monitoring started for ${monitoredPackages.size} packages")
     }
 
+    fun onResume() {
+
+    }
     override fun onInterrupt() {
         instance = null
         Log.d(TAG, "Service interrupted")

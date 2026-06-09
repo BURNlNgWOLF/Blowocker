@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">Overlay</string>
+    <string name="app_name">Blowocker</string>
     <string name="accessibility_service_description">Allows the app to navigate to the Home screen.</string>
 </resources>

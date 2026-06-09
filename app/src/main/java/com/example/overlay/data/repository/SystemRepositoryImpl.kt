@@ -7,9 +7,12 @@ import com.example.overlay.presentation.HomeAccessibilityService
 import com.example.overlay.presentation.OverlayService
 import com.example.overlay.domain.repository.AppInfo
 import com.example.overlay.domain.repository.SystemRepository
+// Database imports removed as the database has been deleted
+// Coroutine imports retained for other uses
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
 
 class SystemRepositoryImpl private constructor(private val context: Context) : SystemRepository {
 
@@ -27,6 +30,13 @@ class SystemRepositoryImpl private constructor(private val context: Context) : S
     private val _currentPackage = MutableSharedFlow<String>(extraBufferCapacity = 1)
     private var isOverlayShowing = false
     private val monitoredPackages = mutableSetOf<String>()
+    // Wi‑Fi blocking state (in‑memory for demo purposes)
+    private val blockedWifis = mutableSetOf<String>()
+    private var wifiDetectionEnabled = false
+
+    // ---------- Usage tracking state (simplified, no database) ----------
+    private var lastPackage: String? = null
+    private var packageStartTime: Long = System.currentTimeMillis()
 
     override fun isAccessibilityServiceAvailable(): Boolean = HomeAccessibilityService.isAvailable()
 
@@ -50,6 +60,9 @@ class SystemRepositoryImpl private constructor(private val context: Context) : S
     }
 
     override fun updateCurrentPackage(packageName: String) {
+        // Simple tracking without persistence
+        lastPackage = packageName
+        packageStartTime = System.currentTimeMillis()
         _currentPackage.tryEmit(packageName)
     }
 
@@ -79,4 +92,21 @@ class SystemRepositoryImpl private constructor(private val context: Context) : S
             )
         }.sortedBy { it.name }
     }
+
+    // ----- Wi‑Fi blocking helpers -----
+    override fun getBlockedWifis(): List<String> = blockedWifis.toList()
+
+    override fun addBlockedWifi(name: String) {
+        blockedWifis.add(name)
+    }
+
+    override fun removeBlockedWifi(name: String) {
+        blockedWifis.remove(name)
+    }
+
+    override fun setWifiDetectionEnabled(enabled: Boolean) {
+        wifiDetectionEnabled = enabled
+    }
+
+    override fun isWifiDetectionEnabled(): Boolean = wifiDetectionEnabled
 }

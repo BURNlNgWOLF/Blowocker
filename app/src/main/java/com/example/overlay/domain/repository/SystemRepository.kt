@@ -18,4 +18,12 @@ interface SystemRepository {
     fun isOverlayShowing(): Boolean
     fun setOverlayShowing(showing: Boolean)
     fun getInstalledApps(): List<AppInfo>
+    // Wi‑Fi blocking helpers
+    fun getBlockedWifis(): List<String>
+    fun addBlockedWifi(name: String)
+    fun removeBlockedWifi(name: String)
+    fun setWifiDetectionEnabled(enabled: Boolean)
+    fun isWifiDetectionEnabled(): Boolean
+    // New: expose database for usage tracking (optional helper)
+    // Implementations may provide a method to obtain the AppDatabase instance.
 }

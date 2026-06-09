@@ -27,10 +27,22 @@ class AppLaunchMonitor(context: Context) {
                 Log.d("AppLaunchMonitor", "Package switched to $packageName on SSID: $ssid")
             }
         }
-        // Existing monitoring for specific packages
+
+        // Monitor specific packages and apply blocking logic
         scope.launch {
             monitorUseCase(packageNames) {
-                startOverlayUseCase(delayMs = 0)
+                // Block if global block‑all is enabled
+                if (BlockingState.blockAll.value) {
+                    Log.d("AppLaunchMonitor", "Blocking overlay due to global block‑all switch")
+                    return@monitorUseCase
+                }
+                // Only start overlay if current SSID is not in the blocked list
+                val currentSsid = wifiMonitor.getCurrentSsid()
+                if (!wifiMonitor.isTargetSsid(currentSsid)) {
+                    startOverlayUseCase(delayMs = 0)
+                } else {
+                    Log.d("AppLaunchMonitor", "Blocking overlay on SSID $currentSsid")
+                }
             }
         }
     }

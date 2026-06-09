@@ -4,7 +4,7 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2026-04-08T09:56:08.405998671Z">
+        <DropdownSelection timestamp="2026-06-09T15:22:37.576834956Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=/home/kisser/.config/.android/avd/Pixel_6_2.avd" />
