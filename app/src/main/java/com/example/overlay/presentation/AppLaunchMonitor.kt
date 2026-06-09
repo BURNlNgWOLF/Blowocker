@@ -18,13 +18,30 @@ class AppLaunchMonitor(context: Context) {
     private val scope = CoroutineScope(Dispatchers.Main)
 
     private val wifiMonitor = WifiMonitor(context)
+    // Map to store the timestamp of the last package switch for each app
+    private val lastSwitchTimestamp = mutableMapOf<String, Long>()
+    // Map to accumulate total usage time (in seconds) per app
+    private val usageSeconds = mutableMapOf<String, Long>()
 
     fun startMonitoring(packageNames: List<String>) {
         // Log SSID on any package switch
         scope.launch {
             repository.observeCurrentPackage().collect { packageName ->
                 val ssid = wifiMonitor.getCurrentSsid()
-                Log.d("AppLaunchMonitor", "Package switched to $packageName on SSID: $ssid")
+                // Record the timestamp of this package switch and update usage
+                val timestamp = System.currentTimeMillis()
+                // If we have a previous timestamp for this package, calculate the elapsed time
+                lastSwitchTimestamp[packageName]?.let { previous ->
+                    val elapsedMs = timestamp - previous
+                    val elapsedSec = elapsedMs / 1000
+                    usageSeconds[packageName] = (usageSeconds[packageName] ?: 0L) + elapsedSec
+                }
+                // Update the last switch timestamp for the package
+                lastSwitchTimestamp[packageName] = timestamp
+                Log.d(
+                    "AppLaunchMonitor",
+                    "Package switched to $packageName on SSID: $ssid at $timestamp"
+                )
             }
         }
 
@@ -46,4 +63,11 @@ class AppLaunchMonitor(context: Context) {
             }
         }
     }
+
+    /**
+     * Returns a map of package names to the total number of seconds the app has been used.
+     * This is calculated from the recorded switch timestamps. Packages that have not yet
+     * recorded a second switch will have a usage of 0 seconds.
+     */
+    fun getUsageSeconds(): Map<String, Long> = usageSeconds.toMap()
 }
