@@ -15,7 +15,9 @@ class ShouldStartOverlayUseCase(
         // When Wi‑Fi‑based mode is active, only start the overlay if the current SSID matches a target.
         if (BlockingState.wifiBasedMode.value) {
             val currentSsid = wifiMonitor.getCurrentSsid()
-            return wifiMonitor.isTargetSsid(currentSsid)
+            val matches = wifiMonitor.isTargetSsid(currentSsid)
+            android.util.Log.d("ShouldStartOverlay", "WiFi mode on – current SSID: '$currentSsid', matches target: $matches")
+            return matches
         }
 
         // Allow overlay

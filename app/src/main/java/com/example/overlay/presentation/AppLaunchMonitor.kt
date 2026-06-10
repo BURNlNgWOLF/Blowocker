@@ -53,7 +53,10 @@ class AppLaunchMonitor(context: Context) {
 
         scope.launch {
             monitorUseCase(packageNames) {
+                // Ensure we have the latest SSID list before making a decision.
+                wifiMonitor.refreshSsids()
                 val shouldStart = ShouldStartOverlayUseCase(repository, wifiMonitor).invoke()
+                android.util.Log.d("AppLaunchMonitor", "ShouldStartOverlayUseCase returned: $shouldStart")
                 if (shouldStart) {
                     startOverlayUseCase(delayMs = 0)
                 } else {

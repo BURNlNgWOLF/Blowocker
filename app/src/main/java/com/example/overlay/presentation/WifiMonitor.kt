@@ -70,9 +70,26 @@ class WifiMonitor(private val context: Context) {
     }
 
 
+    /**
+     * Checks whether the provided [current] SSID matches any of the stored target SSIDs.
+     *
+     * The SSID values coming from the system may be quoted (e.g. "\"MyWifi\"") and the
+     * values persisted by the UI may also contain stray quotes. To make the comparison robust we
+     * normalise both sides by:
+     *   1. Trimming whitespace
+     *   2. Removing surrounding double‑quote characters
+     *   3. Converting to lower‑case
+     *
+     * This ensures that a user‑entered SSID like `MyWifi` will correctly match the system
+     * reported SSID `"MyWifi"`.
+     */
     fun isTargetSsid(current: String): Boolean {
-        val normalizedCurrent = current.trim().lowercase()
-        return targetSsids.any { it.trim().lowercase() == normalizedCurrent }
+        // If there are no configured SSIDs, we should never consider the current network a target.
+        if (targetSsids.isEmpty()) return false
+        // If the system reports an unknown or empty SSID, it should never match.
+        val normalizedCurrent = current.trim().trim('"').lowercase()
+        if (normalizedCurrent.isBlank() || normalizedCurrent == "unknown") return false
+        return targetSsids.any { it.trim().trim('"').lowercase() == normalizedCurrent }
     }
 
 

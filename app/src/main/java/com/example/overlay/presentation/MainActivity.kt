@@ -258,9 +258,11 @@ fun MainScaffold(
                     )
                 }
                 Screen.Usage -> {
+                    // UsageScreen does not require the AppLaunchMonitor parameter.
+                    // The previous call passed a non‑existent argument, causing a compile‑time error.
+                    // We remove the erroneous argument and keep the existing modifier.
                     UsageScreen(
-                        modifier = Modifier.padding(innerPadding),
-                        appLaunchMonitor = appLaunchMonitor
+                        modifier = Modifier.padding(innerPadding)
                     )
                 }
             }
