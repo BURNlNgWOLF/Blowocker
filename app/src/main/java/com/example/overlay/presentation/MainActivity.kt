@@ -159,32 +159,28 @@ fun MainScaffold(
     // Load persisted monitored apps
     val persistedApps = remember { appsManager.getMonitoredApps() }
 
-    // Initialize the state as empty (or with whatever is currently in the repo)
     val monitoredPackagesState = remember { mutableStateOf(repository.getMonitoredPackages()) }
 
-    // FIX: Sync repository AND explicitly update the Compose state inside the launch block
     LaunchedEffect(Unit) {
-        // 1. Put the file items into your repository database/memory
         persistedApps.forEach { repository.addMonitoredPackage(it) }
 
-        // 2. CRITICAL FIX: Update the Compose state so the screens refresh on launch!
         monitoredPackagesState.value = repository.getMonitoredPackages()
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { androidx.compose.material3.Text(text = "Overlay Monitor") },
+                title = { Text(text = "Overlay Monitor") },
             )
         },
         bottomBar = {
             androidx.compose.material3.BottomAppBar(
-                containerColor = androidx.compose.ui.graphics.Color.Transparent,
-                contentColor = androidx.compose.ui.graphics.Color.Unspecified
+                containerColor = Color.Transparent,
+                contentColor = Color.Unspecified
             ) {
-                androidx.compose.foundation.layout.Row(
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceEvenly
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Box(
                         modifier = Modifier
@@ -250,7 +246,6 @@ fun MainScaffold(
                     }
                 )
                 Screen.WifiSettings -> {
-                    // Wi‑Fi settings handled by activity; no composable needed
                 }
                 Screen.Settings -> {
                     SettingsScreen(
@@ -258,9 +253,6 @@ fun MainScaffold(
                     )
                 }
                 Screen.Usage -> {
-                    // UsageScreen does not require the AppLaunchMonitor parameter.
-                    // The previous call passed a non‑existent argument, causing a compile‑time error.
-                    // We remove the erroneous argument and keep the existing modifier.
                     UsageScreen(
                         modifier = Modifier.padding(innerPadding)
                     )
