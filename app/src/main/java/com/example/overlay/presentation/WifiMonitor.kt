@@ -89,8 +89,15 @@ class WifiMonitor(private val context: Context) {
     /**
      * Returns true if the current SSID matches any of the target SSIDs.
      */
+    /**
+     * Returns true if the provided SSID matches any of the target SSIDs, ignoring case.
+     * The comparison is defensive: both the stored SSIDs and the current SSID are trimmed
+     * of surrounding whitespace and compared case‑insensitively. This prevents mismatches
+     * caused by differences in capitalization that are irrelevant for Wi‑Fi network names.
+     */
     fun isTargetSsid(current: String): Boolean {
-        return current in targetSsids
+        val normalizedCurrent = current.trim().lowercase()
+        return targetSsids.any { it.trim().lowercase() == normalizedCurrent }
     }
 
     /**

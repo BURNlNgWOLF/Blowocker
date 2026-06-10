@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
+import com.example.overlay.presentation.theme.onPrimaryContainerLight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,11 +61,14 @@ import com.example.overlay.data.repository.SystemRepositoryImpl
 import com.example.overlay.domain.usecase.StartOverlayUseCase
 import com.example.overlay.presentation.theme.OverlayTheme
 import com.example.overlay.presentation.MonitoredAppsManager
+import com.example.overlay.presentation.UsageScreen
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -189,7 +193,7 @@ fun MainScaffold(
                             .clickable { currentScreen = Screen.Selection },
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = "Add Apps")
+                    Icon(Icons.Default.Add, contentDescription = "Add Apps", tint = onPrimaryContainerLight)
                     }
                     Box(
                         modifier = Modifier
@@ -198,7 +202,7 @@ fun MainScaffold(
                             .clickable { currentScreen = Screen.Monitored },
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Monitored Apps")
+                    Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Monitored Apps", tint = onPrimaryContainerLight)
                     }
                     Box(
                         modifier = Modifier
@@ -207,58 +211,75 @@ fun MainScaffold(
                             .clickable { currentScreen = Screen.Settings },
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = "Settings")
+                    Icon(Icons.Default.Settings, contentDescription = "Settings", tint = com.example.overlay.presentation.theme.onPrimaryContainerLight)
+                    }
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
+                            .clickable { currentScreen = Screen.Usage },
+                        contentAlignment = Alignment.Center
+                    ) {
+                    Icon(Icons.Default.DateRange, contentDescription = "Usage", tint = com.example.overlay.presentation.theme.onPrimaryContainerLight)
                     }
                 }
             }
         }
     ) { innerPadding ->
-        when (currentScreen) {
-            Screen.Selection -> SelectionScreen(
-                modifier = Modifier.padding(innerPadding),
-                repository = repository,
-                monitoredPackages = monitoredPackagesState.value,
-                onAppSelected = { packageName ->
-                    repository.addMonitoredPackage(packageName)
-                    appsManager.addApp(packageName)
-                    monitoredPackagesState.value = repository.getMonitoredPackages()
-                    appLaunchMonitor.startMonitoring(repository.getMonitoredPackages())
-                }
-            )
-            Screen.Monitored -> MonitoredAppsScreen(
-                modifier = Modifier.padding(innerPadding),
-                repository = repository,
-                monitoredPackages = monitoredPackagesState.value,
-                onAppRemoved = { packageName ->
-                    repository.removeMonitoredPackage(packageName)
-                    appsManager.removeApp(packageName)
-                    monitoredPackagesState.value = repository.getMonitoredPackages()
-                    appLaunchMonitor.startMonitoring(repository.getMonitoredPackages())
-                }
-            )
-            Screen.WifiSettings -> {
-                // Wi‑Fi settings handled by activity; no composable needed
-            }
-            Screen.Settings -> {
-                SettingsScreen(
-                    modifier = Modifier.padding(innerPadding)
+            when (currentScreen) {
+                Screen.Selection -> SelectionScreen(
+                    modifier = Modifier.padding(innerPadding),
+                    repository = repository,
+                    monitoredPackages = monitoredPackagesState.value,
+                    onAppSelected = { packageName ->
+                        repository.addMonitoredPackage(packageName)
+                        appsManager.addApp(packageName)
+                        monitoredPackagesState.value = repository.getMonitoredPackages()
+                        appLaunchMonitor.startMonitoring(repository.getMonitoredPackages())
+                    }
                 )
+                Screen.Monitored -> MonitoredAppsScreen(
+                    modifier = Modifier.padding(innerPadding),
+                    repository = repository,
+                    monitoredPackages = monitoredPackagesState.value,
+                    onAppRemoved = { packageName ->
+                        repository.removeMonitoredPackage(packageName)
+                        appsManager.removeApp(packageName)
+                        monitoredPackagesState.value = repository.getMonitoredPackages()
+                        appLaunchMonitor.startMonitoring(repository.getMonitoredPackages())
+                    }
+                )
+                Screen.WifiSettings -> {
+                    // Wi‑Fi settings handled by activity; no composable needed
+                }
+                Screen.Settings -> {
+                    SettingsScreen(
+                        modifier = Modifier.padding(innerPadding)
+                    )
+                }
+                Screen.Usage -> {
+                    UsageScreen(
+                        modifier = Modifier.padding(innerPadding),
+                        appLaunchMonitor = appLaunchMonitor
+                    )
+                }
             }
-        }
     }
 }
 
 
-enum class Screen {
-    Selection, Monitored,
-    WifiSettings,
-    Settings
-}
+    enum class Screen {
+        Selection, Monitored,
+        WifiSettings,
+        Settings,
+        Usage
+    }
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier
 ){
-    var switchState by remember { mutableStateOf(false) }
+    // Switch controls whether overlay is limited to target Wi‑Fi SSIDs
+    var switchState by BlockingState.wifiBasedMode
     var textFieldValue by remember { mutableStateOf("") }
 
     // 1. Keeps tracking the UI list
@@ -298,14 +319,9 @@ fun SettingsScreen(
             androidx.compose.material3.Switch(
                 checked = switchState,
                 onCheckedChange = { isOn ->
-                    switchState = isOn
-                    if (isOn) {
-                        wifiMonitor.startMonitoring(wifiMonitor.getTargetSsids()) {
-                            wifiDetected = true
-                        }
-                    } else {
-                        wifiDetected = false
-                    }
+                    // Update the global Wi‑Fi based mode flag
+                    BlockingState.wifiBasedMode.value = isOn
+                    // No need to manually manage wifiDetected here; overlay logic will consult the flag
                 }
             )
         }
@@ -316,14 +332,14 @@ fun SettingsScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ) {
-            androidx.compose.material3.Text("Block on all connection types", modifier = Modifier.weight(1f))
-            androidx.compose.material3.Switch(
-                checked = blockAllState.value,
-                onCheckedChange = { isOn ->
-                    blockAllState.value = isOn
-                    if (isOn) { switchState = true }
-                }
-            )
+            androidx.compose.material3.Text("Temporarily turn block off", modifier = Modifier.weight(1f))
+                    androidx.compose.material3.Switch(
+                        checked = blockAllState.value,
+                        onCheckedChange = { isOn ->
+                            // Toggle global block‑all without affecting the Wi‑Fi block switch
+                            blockAllState.value = isOn
+                        }
+                    )
         }
 
         // TextField for adding SSIDs
@@ -396,9 +412,6 @@ fun SettingsScreen(
                 }
             }
         }
-
-        // REMOVED: wifiMonitor.refreshSsids() from the bottom of the column.
-        // Leaving it here causes it to trigger continuously on every recomposition.
     }
 }
 //@Composable

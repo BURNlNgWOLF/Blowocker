@@ -3,4 +3,5 @@ plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.kotlin.android) apply false
+    // Enable kapt for annotation processing across modules (applied in module build files)
 }

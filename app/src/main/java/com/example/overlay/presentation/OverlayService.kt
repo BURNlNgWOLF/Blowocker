@@ -15,6 +15,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -37,7 +39,6 @@ import com.example.overlay.data.repository.SystemRepositoryImpl
 import com.example.overlay.domain.repository.SystemRepository
 import com.example.overlay.domain.usecase.NavigateHomeUseCase
 import com.example.overlay.presentation.theme.OverlayTheme
-
 class OverlayService : LifecycleService(), SavedStateRegistryOwner, ViewModelStoreOwner {
 
     private val savedStateRegistryController = SavedStateRegistryController.create(this)
@@ -189,18 +190,20 @@ fun OverlayContent(onHomeClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0x59006D00))
+            .background(MaterialTheme.colorScheme.primaryContainer)
     ) {
         Text(
-            text = "Overlay Active",
+            text = "Reconsider",
             color = Color.White,
             fontSize = 40.sp,
             modifier = Modifier
                 .align(Alignment.Center)
-                .background(Color.Red)
         )
         Button(
             onClick = onHomeClick,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            ),
             modifier = Modifier.align(Alignment.TopStart)
         ) {
             Text(text = "Go to Home", fontSize = 16.sp)

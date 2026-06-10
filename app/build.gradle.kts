@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.android)
+    // Room requires kapt for annotation processing
+    id("kotlin-kapt")
 }
 
 android {
@@ -64,4 +66,11 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+    // Room database (using version compatible with current Kotlin metadata)
+    implementation("androidx.room:room-runtime:2.5.2")
+    kapt("androidx.room:room-compiler:2.5.2")
+    // Add kotlinx-metadata-jvm to satisfy Room's metadata version requirement
+    implementation("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.7.0")
+    // Room Kotlin extensions for coroutine support
+    implementation("androidx.room:room-ktx:2.5.2")
 }
