@@ -55,7 +55,6 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    // Google Fonts support for Compose
     implementation("androidx.compose.ui:ui-text-google-fonts:1.5.0")
     implementation(libs.androidx.constraintlayout)
     implementation("androidx.recyclerview:recyclerview:1.3.2")
@@ -66,10 +65,10 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-    // Room database (using version compatible with current Kotlin metadata)
+    // Room database
     implementation("androidx.room:room-runtime:2.5.2")
     kapt("androidx.room:room-compiler:2.5.2")
-    // Add kotlinx-metadata-jvm to satisfy Room's metadata version requirement
+    // Add kotlinx-metadata-jvm for room
     implementation("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.7.0")
     // Room Kotlin extensions for coroutine support
     implementation("androidx.room:room-ktx:2.5.2")

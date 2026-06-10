@@ -3,10 +3,7 @@ package com.example.overlay.presentation
 import android.content.Context
 import android.util.Log
 
-/**
- * Helper class that persists the list of monitored package names using SharedPreferences.
- * It mirrors the behaviour of [WifiMonitor] but for app package identifiers.
- */
+
 class MonitoredAppsManager(private val context: Context) {
     private val prefsName = "monitored_apps_prefs"
     private val appsKey = "saved_apps"
@@ -32,7 +29,7 @@ class MonitoredAppsManager(private val context: Context) {
     private fun saveAppsToPrefs() {
         try {
             val prefs = context.getSharedPreferences(prefsName, Context.MODE_PRIVATE)
-            // commit to ensure immediate write
+            // Ensure immediate write
             prefs.edit().putStringSet(appsKey, cachedApps).commit()
         } catch (e: Exception) {
             Log.e("MonitoredAppsMgr", "Failed to save apps", e)

@@ -14,27 +14,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.overlay.data.database.AppDatabase
 
-/**
- * Visualiser that shows how much time was spent in each monitored app.
- * It reads the usage map from [AppLaunchMonitor] and displays a label and a
- * horizontal progress bar for each package. The progress values are scaled so
- * that the sum of all bars represents a full bar (i.e. 100%).
- */
+
 @Composable
 fun UsageScreen(
     modifier: Modifier = Modifier,
-    appLaunchMonitor: AppLaunchMonitor
 ) {
-    // Retrieve usage records directly from the Room database for persistence safety.
+    // Retrieve usage records directly from the Room database
     val context = LocalContext.current
     val db = remember { AppDatabase.getInstance(context) }
     val usageRecords = db.usageDao().getAll()
 
-    // Convert list to a map of package -> seconds for easier calculations.
+    // Convert list to a map of package -> seconds
     val usageMap = usageRecords.associate { it.packageName to it.timeSeconds }
     val totalTime = usageMap.values.sum().coerceAtLeast(1L)
 
-    // Sort apps by usage descending for clearer visual hierarchy
+    // Sort apps by usage descending
     val sortedUsage = usageMap.entries.sortedByDescending { it.value }
 
     Column(modifier = modifier.padding(16.dp)) {
@@ -47,7 +41,7 @@ fun UsageScreen(
                     progress = proportion,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(12.dp) // thicker bar
+                        .height(12.dp)
                         .padding(top = 4.dp)
                 )
             }

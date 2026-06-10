@@ -66,7 +66,6 @@ class OverlayService : LifecycleService(), SavedStateRegistryOwner, ViewModelSto
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         createNotificationChannel()
 
-        // Manual Dependency Injection
         repository = SystemRepositoryImpl.getInstance(applicationContext)
         navigateHomeUseCase = NavigateHomeUseCase(repository)
     }

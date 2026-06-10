@@ -13,14 +13,8 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
-        /**
-         * Returns a singleton instance of the database.
-         *
-         * The `allowMainThreadQueries()` call is added **only for debugging** purposes.
-         * In production you should perform all DB operations off the main thread (as we already do
-         * via coroutines in `AppLaunchMonitor`). This flag prevents the database from being
-         * considered “closed” when accessed from the UI thread during inspection.
-         */
+        // Returns a singleton instance of the database.
+
         fun getInstance(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(

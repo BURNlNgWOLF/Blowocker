@@ -278,11 +278,11 @@ fun MainScaffold(
 fun SettingsScreen(
     modifier: Modifier = Modifier
 ){
-    // Switch controls whether overlay is limited to target Wi‑Fi SSIDs
+    // Wifi mode
     var switchState by BlockingState.wifiBasedMode
     var textFieldValue by remember { mutableStateOf("") }
 
-    // 1. Keeps tracking the UI list
+    // List of Wifi's
     val ssidList = remember { mutableStateListOf<String>() }
     var ssidListIsLoading by remember { mutableStateOf(true) }
     var wifiDetected by remember { mutableStateOf(false) }
@@ -291,13 +291,10 @@ fun SettingsScreen(
     val wifiMonitor = remember { WifiMonitor(context) }
     val blockAllState = remember { BlockingState.blockAll }
 
-    // 2. FIX: Load the file data into memory and UI state on launch
     LaunchedEffect(Unit) {
-        // First ensure your monitor loads the file data into its memory
         wifiMonitor.refreshSsids()
 
-        // Grab the loaded list from your monitor and add them to the Compose UI list
-        val savedSsids = wifiMonitor.getTargetSsids() // Or whatever your getter is named
+        val savedSsids = wifiMonitor.getTargetSsids()
         ssidList.addAll(savedSsids)
 
         ssidListIsLoading = false
@@ -309,30 +306,27 @@ fun SettingsScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Row with label and switch for Wi‑Fi based mode
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ) {
-            androidx.compose.material3.Text("Block on wifi", modifier = Modifier.weight(1f))
+            Text("Block on wifi", modifier = Modifier.weight(1f))
             androidx.compose.material3.Switch(
                 checked = switchState,
                 onCheckedChange = { isOn ->
                     // Update the global Wi‑Fi based mode flag
                     BlockingState.wifiBasedMode.value = isOn
-                    // No need to manually manage wifiDetected here; overlay logic will consult the flag
                 }
             )
         }
 
-        // Row with label and switch for global block‑all
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ) {
-            androidx.compose.material3.Text("Temporarily turn block off", modifier = Modifier.weight(1f))
+        Text("Temporarily turn block off", modifier = Modifier.weight(1f))
                     androidx.compose.material3.Switch(
                         checked = blockAllState.value,
                         onCheckedChange = { isOn ->
@@ -351,58 +345,57 @@ fun SettingsScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Show status when Wi‑Fi detected and mode active
+        // Show status when Wi‑Fi detected and mode active DEBUG (or not)
         if (switchState && wifiDetected) {
-            androidx.compose.material3.Text("Blocking apps – target Wi‑Fi detected", color = androidx.compose.ui.graphics.Color.Red)
+           Text("Blocking apps – target Wi‑Fi detected", color = MaterialTheme.colorScheme.error)
         }
 
-        // Button to add item to list
+        // Button to add item to list of SSIDs
         androidx.compose.material3.Button(
             onClick = {
                 if (textFieldValue.isNotBlank()) {
                     val cleaned = textFieldValue.replace("\n", "").replace("\r", "").trim()
                     if (cleaned.isNotEmpty()) {
                         wifiMonitor.addSsid(cleaned) // Saves to file/internal memory
-                        ssidList.add(cleaned)        // Updates UI immediately
+                        ssidList.add(cleaned)        // Updates UI
                     }
                     textFieldValue = ""
                 }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            androidx.compose.material3.Text("Add SSID")
+            Text("Add SSID")
         }
 
-        // 3. FIX: Show a loading indicator until the file reads completely
         if (ssidListIsLoading) {
-            androidx.compose.material3.CircularProgressIndicator(
+            CircularProgressIndicator(
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
         } else {
-            // Display added SSIDs as cards with a remove button
+            // Display added SSIDs as cards
             LazyColumn {
                 items(ssidList) { ssid ->
-                    androidx.compose.material3.Card(
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
                     ) {
-                        androidx.compose.foundation.layout.Row(
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            androidx.compose.material3.Text(
+                            Text(
                                 ssid,
                                 modifier = Modifier.weight(1f)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            androidx.compose.material3.IconButton(onClick = {
+                            IconButton(onClick = {
                                 wifiMonitor.removeSsid(ssid)
                                 ssidList.remove(ssid)
                             }) {
-                                androidx.compose.material3.Icon(
+                                Icon(
                                     imageVector = Icons.Default.Delete,
                                     contentDescription = "Remove $ssid"
                                 )
@@ -414,134 +407,7 @@ fun SettingsScreen(
         }
     }
 }
-//@Composable
-//fun SettingsScreen(
-//    modifier: Modifier = Modifier
-//){
-//    var switchState by remember { mutableStateOf(false) }
-//    var textFieldValue by remember { mutableStateOf("") }
-//    // List of SSIDs entered by the user
-//    val ssidList = remember { mutableStateListOf<String>() }
-//    var ssidListIsLoading by remember { mutableStateOf(true) }
-//    // State to indicate if the target Wi‑Fi is detected
-//    var wifiDetected by remember { mutableStateOf(false) }
-//    // Remember WifiMonitor instance
-//    val context = LocalContext.current
-//    val wifiMonitor = remember { WifiMonitor(context) }
-//        // Global block‑all state (mutableState<Boolean>)
-//        val blockAllState = remember { BlockingState.blockAll }
-//
-//        Column(
-//            modifier = modifier
-//                .fillMaxSize()
-//                .padding(16.dp),
-//            verticalArrangement = Arrangement.spacedBy(12.dp)
-//        ) {
-//            // Row with label and switch for Wi‑Fi based mode
-//            Row(
-//                verticalAlignment = Alignment.CenterVertically,
-//                horizontalArrangement = Arrangement.SpaceBetween,
-//                modifier = Modifier.fillMaxWidth()
-//            ) {
-//                androidx.compose.material3.Text("Block on wifi", modifier = Modifier.weight(1f))
-//                androidx.compose.material3.Switch(
-//                    checked = switchState,
-//                    onCheckedChange = { isOn ->
-//                        switchState = isOn
-//                        if (isOn) {
-//                            // Start monitoring for all SSIDs added via the UI
-//                            wifiMonitor.startMonitoring(wifiMonitor.getTargetSsids()) {
-//                                wifiDetected = true
-//                            }
-//                        } else {
-//                            wifiDetected = false
-//                        }
-//                    }
-//                )
-//            }
-//            // Row with label and switch for global block‑all
-//            Row(
-//                verticalAlignment = Alignment.CenterVertically,
-//                horizontalArrangement = Arrangement.SpaceBetween,
-//                modifier = Modifier.fillMaxWidth()
-//            ) {
-//                androidx.compose.material3.Text("Block on all connection types", modifier = Modifier.weight(1f))
-//                androidx.compose.material3.Switch(
-//                    checked = blockAllState.value,
-//                    onCheckedChange = { isOn ->
-//                        blockAllState.value = isOn
-//                        // When global block‑all is enabled, also enable the Wi‑Fi based mode
-//                        if (isOn) {
-//                            switchState = true
-//                        }
-//                    }
-//                )
-//            }
-//        // TextField for adding SSIDs
-//        OutlinedTextField(
-//            value = textFieldValue,
-//            onValueChange = { textFieldValue = it.replace("\n", "").replace("\r", "") },
-//            label = { androidx.compose.material3.Text("Enter SSID") },
-//            singleLine = true,
-//            modifier = Modifier.fillMaxWidth()
-//        )
-//        // Show status when Wi‑Fi detected and mode active
-//        if (switchState && wifiDetected) {
-//            androidx.compose.material3.Text("Blocking apps – target Wi‑Fi detected", color = androidx.compose.ui.graphics.Color.Red)
-//        }
-//        // Button to add item to list
-//            androidx.compose.material3.Button(
-//                onClick = {
-//                    if (textFieldValue.isNotBlank()) {
-//                        // Strip newline and carriage return characters and trim whitespace before adding
-//                        val cleaned = textFieldValue.replace("\n", "").replace("\r", "").trim()
-//                        if (cleaned.isNotEmpty()) {
-//                            wifiMonitor.addSsid(cleaned)
-//                            ssidList.add(cleaned)
-//                        }
-//                        textFieldValue = ""
-//                    }
-//                },
-//                modifier = Modifier.fillMaxWidth()
-//            ) {
-//                androidx.compose.material3.Text("Add SSID")
-//            }
-//        // Display added SSIDs as cards with a remove button
-//        LazyColumn {
-//            items(ssidList) { ssid ->
-//                androidx.compose.material3.Card(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(vertical = 4.dp)
-//                ) {
-//                    androidx.compose.foundation.layout.Row(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .padding(8.dp),
-//                        verticalAlignment = Alignment.CenterVertically
-//                    ) {
-//                        androidx.compose.material3.Text(
-//                            ssid,
-//                            modifier = Modifier.weight(1f)
-//                        )
-//                        Spacer(modifier = Modifier.width(8.dp))
-//                        androidx.compose.material3.IconButton(onClick = {
-//                            // Remove from monitor and UI list
-//                            wifiMonitor.removeSsid(ssid)
-//                            ssidList.remove(ssid)
-//                        }) {
-//                            androidx.compose.material3.Icon(
-//                                imageVector = Icons.Default.Delete,
-//                                contentDescription = "Remove $ssid"
-//                            )
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//            wifiMonitor.refreshSsids()
-//    }
-//}
+
 
 @Composable
 fun SelectionScreen(
@@ -586,7 +452,7 @@ fun SelectionScreen(
             OutlinedTextField(
                 value = searchText,
                 onValueChange = { searchText = it.replace("\n", "").replace("\r", "") },
-                label = { androidx.compose.material3.Text("Search") },
+                label = { Text("Search") },
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -623,10 +489,8 @@ fun MonitoredAppsScreen(
     monitoredPackages: List<String>,
     onAppRemoved: (String) -> Unit
 ) {
-    // 1. Matches your example by using type inference to avoid compilation errors
     val apps = remember { repository.getInstalledApps() }
 
-    // 2. Matches your example by filtering dynamically inline
     val monitoredApps = apps.filter { app ->
         app.packageName in monitoredPackages
     }
@@ -650,13 +514,13 @@ fun MonitoredAppsScreen(
                 )
             } else {
                 LazyColumn {
-                    items(monitoredApps) { app -> // 'app' type is safely inferred here
+                    items(monitoredApps) { app ->
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 4.dp)
                         ) {
-                            androidx.compose.foundation.layout.Row(
+                            Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(16.dp),
@@ -669,7 +533,6 @@ fun MonitoredAppsScreen(
                                     Text(text = app.name, fontSize = 18.sp)
                                     Text(text = app.packageName, fontSize = 12.sp)
                                 }
-                                // IconButton is placed at the end of the Row, achieving right‑side alignment
                                 IconButton(onClick = { onAppRemoved(app.packageName) }) {
                                     Icon(Icons.Default.Delete, contentDescription = "Remove ${app.name}")
                                 }

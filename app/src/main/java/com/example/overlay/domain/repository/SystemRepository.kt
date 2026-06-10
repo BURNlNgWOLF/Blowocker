@@ -18,7 +18,6 @@ interface SystemRepository {
     fun isOverlayShowing(): Boolean
     fun setOverlayShowing(showing: Boolean)
     fun getInstalledApps(): List<AppInfo>
-    // Wi‑Fi blocking helpers
     fun getBlockedWifis(): List<String>
     fun addBlockedWifi(name: String)
     fun removeBlockedWifi(name: String)
